@@ -213,11 +213,14 @@ hybridconnector会创建一个hybridsocket对象关联到：hybridsocket.js(其�
 函用以处理message事件。同时hybridsocket.js定义了好几个send有关的函数，其实注意观察会发现这些send有关的函数最终都是调用的socket对象（也就是前面讲述的ws，wss，tcp，ssl协议有关的tlssocket.js，tcpsocket.js）
 的send函数向客户端发送消息。接着我们跟进去common/handler.js看看：handler.js里定义了4种类型的消息处理函数，其handle函数首先取出消息体的type字段，然后分析其所属消息类型(握手消息类型，握手确认消息类型，心跳消息类型，数据消息类型)，
 执行对应的消息处理函数。
-
-3.session组件的启动我们看到exports的时候，设置了app.sessionService属性，同时我们还看到了this.service对象，它依赖于：common/service/sessionService.js文件。看到这里不知道大家是否还记得我在讲backendSessionService时说道，
-backendSessionService组件的核心也是依赖sessionService.js。下面我们就跟进common/service/sessionService.js里面去看看。SessionService主要定义了2个数组：
-this.sessions={};//存放所有的session数组:key:sessionidthis.uidMap={};//存放所有的session数组:key:uid同时我们还看到这里面有好多我们在pomelo官网api里面看到的函数。没错，这就是关于sessionapi里面提到的函数源码，
-其实你去读一下这些函数的实现就会发现，它们基本上就是在对this.sessions和this.uidMap数组就行处理。this.sessions里面存放是所有的客户端sessions，this.uidMap存放的是已绑定过uid的sessions。大家注意到，
+
+3.session组件的启动我们看到exports的时候，设置了app.sessionService属性，同时我们还看到了this.service对象，它依赖于：common/service/sessionService.js文件。
+看到这里不知道大家是否还记得我在讲backendSessionService时说道，backendSessionService组件的核心也是依赖sessionService.js。
+下面我们就跟进common/service/sessionService.js里面去看看。
+SessionService主要定义了2个数组：
+this.sessions={};//存放所有的session数组:key:sessionidthis.uidMap={};//存放所有的session数组:key:uid同时我们还看到这里面有好多我们在pomelo官网api里面看到的函数。
+没错，这就是关于sessionapi里面提到的函数源码，其实你去读一下这些函数的实现就会发现，它们基本上就是在对this.sessions和this.uidMap数组就行处理。
+this.sessions里面存放是所有的客户端sessions，this.uidMap存放的是已绑定过uid的sessions。大家注意到，
 SessionService的create函数里面创建了一个session对象：varsession=newSession(sid,frontendId,socket,this);注意观察注释里面的描述：Session类有两个代理类，一个是BackendSession类用于后端服务器，
 另一个是FrontendSession用于前端服务器。Session里面定义了一个this.settings数组，用于保存自定义的session数据（通过session.set，session.get函数使用），同时this.__socket__保存了原生socket对象，用于send发送数据，
 关闭连接之类。再注意到Session有个toFrontendSession函数里创建了FrontendSession对象。FrontendSession主要就是克隆了Session类的属性，然后this.__session__还保存了原始的Session对象。FrontendSession是专门提供给前端服务器用的。

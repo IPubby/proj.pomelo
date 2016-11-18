@@ -1,5 +1,6 @@
 var exp = module.exports;
 
+// 某种意义上的引用计数？
 /**
  * Count down to zero and invoke cb finally.
  */

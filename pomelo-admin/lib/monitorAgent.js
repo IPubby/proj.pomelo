@@ -53,6 +53,7 @@ MonitorAgent.prototype.connect = function (port, host, cb) {
         return;
     }
 
+    // sClient连接之后才产生通信用的socket
     this.socket = sclient.connect(host + ':' + port, {
         'force new connection': true,
         'reconnect': true,
