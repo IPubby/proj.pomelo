@@ -1,8 +1,4 @@
-/*!
- * Pomelo -- consoleModule nodeInfo processInfo
- * Copyright(c) 2012 fantasyni <fantasyni@163.com>
- * MIT Licensed
- */
+
 var monitor = require('pomelo-monitor');
 var logger = require('pomelo-logger').getLogger('pomelo-admin', __filename);
 

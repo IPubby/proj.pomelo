@@ -1,3 +1,4 @@
+// 底层的集群服务
 var utils = require('./util/utils');
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
@@ -36,7 +37,7 @@ var ConsoleService = function (opts) {
     // 加载的模块
     this.modules = {};
 
-    // 加载的命令
+    // 加载的命令（自身的一些方法调用）
     this.commands = {
         'list': listCommand,
         'enable': enableCommand,
@@ -62,6 +63,7 @@ var ConsoleService = function (opts) {
     }
 };
 
+// 支持事件
 util.inherits(ConsoleService, EventEmitter);
 
 /**
@@ -81,6 +83,7 @@ ConsoleService.prototype.start = function (cb) {
                 return;
             }
 
+            // 把一些感兴趣的agnet的事件向自身注册
             exportEvent(self, self.agent, 'register');
             exportEvent(self, self.agent, 'disconnect');
             exportEvent(self, self.agent, 'reconnect');
@@ -216,6 +219,7 @@ ConsoleService.prototype.execute = function (moduleId, method, msg, cb) {
     }
 
     if (method === 'clientHandler') {
+        // 对Client的审计
         self.emit('admin-log', log);
     }
 
@@ -257,7 +261,6 @@ ConsoleService.prototype.command = function (command, moduleId, msg, cb) {
  * @param {Object} value module data
  * @api public
  */
-
 ConsoleService.prototype.set = function (moduleId, value) {
     this.values[moduleId] = value;
 };
@@ -281,6 +284,7 @@ var registerRecord = function (service, moduleId, module) {
         enable: false
     };
 
+    // 类型为周期性的，说明需要引擎的调度来获取执行机会
     if (module.type && module.interval) {
         if (!service.master && record.module.type === 'push' || service.master && record.module.type !== 'push') {
             // push for monitor or pull for master(default)
@@ -311,6 +315,7 @@ var registerRecord = function (service, moduleId, module) {
  * @api private
  */
 var addToSchedule = function (service, record) {
+    // 把模块的执行注册给Schedule
     if (record && record.schedule) {
         record.jobId = schedule.scheduleJob({
                 start: Date.now() + record.delay,
@@ -336,6 +341,7 @@ var doScheduleJob = function (args) {
         return;
     }
 
+    // 直接运行一下Module
     if (service.master) {
         record.module.masterHandler(service.agent, null, function (err) {
             logger.error('interval push should not have a callback.');
@@ -400,6 +406,7 @@ var enableCommand = function (consoleService, moduleId, msg, cb) {
     }
 
     if (consoleService.master) {
+        // 自身启用后，在通知Monitor启用
         consoleService.enable(moduleId);
         consoleService.agent.notifyCommand("enable", moduleId, msg);
         cb(null, protocol.PRO_OK);
